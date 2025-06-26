@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -642,6 +642,31 @@
             window.Telegram.WebApp.ready();
         }
 
+        // Start the game
+        initGame();
+
+        // ✅ 插在这后面
+        document.getElementById('controlButton').addEventListener('click', () => {
+            const btn = document.getElementById('controlButton');
+
+            if (!gameActive) {
+                initGame();
+                gamePaused = false;
+                btn.textContent = "Pause";
+                startTimer();
+                return;
+            }
+
+            if (gamePaused) {
+                gamePaused = false;
+                btn.textContent = "Pause";
+                startTimer();
+            } else {
+                gamePaused = true;
+                btn.textContent = "Continue";
+                clearInterval(timerInterval);
+            }
+        });
     </script>
 </body>
 </html>
