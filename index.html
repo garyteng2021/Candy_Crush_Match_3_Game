@@ -187,14 +187,19 @@
     </div>
 
     <script>
-    window.Telegram.WebApp.ready();
-    const tgUser = Telegram.WebApp.initDataUnsafe.user;
+    let userId = 'guest'; // 默认用户
 
-    let userId = null;
-    if (tgUser && tgUser.id) {
-      userId = tgUser.id;
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();  // 初始化 Telegram WebApp
+        const tgUser = Telegram.WebApp.initDataUnsafe?.user;
+
+        if (tgUser && tgUser.id) {
+            userId = tgUser.id;
+        } else {
+            alert("⚠️ 请从 Telegram 中打开游戏链接");
+        }
     } else {
-      alert("⚠️ 请从 Telegram 中打开游戏链接");
+        alert("⚠️ Telegram WebApp 未加载");
     }
         // Game configuration
         const GRID_SIZE = 8;
@@ -670,11 +675,6 @@
         function restartGame() {
             document.getElementById('gameOverModal').style.display = 'none';
             initGame();
-        }
-
-        // Initialize Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
         }
 
         // Start the game
