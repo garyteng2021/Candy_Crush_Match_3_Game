@@ -23,6 +23,7 @@
         }
         .controls {
             margin-top: 10px;
+            text-align: center;
         }
         .controls button {
             margin: 0 10px;
@@ -181,10 +182,6 @@
             <button id="pauseBtn">暂停</button>
         </div>
         <canvas id="gameCanvas" width="480" height="480"></canvas>
-        <div class="controls">
-            <button id="startBtn">开始游戏</button>
-            <button id="pauseBtn">暂停</button>
-        </div>
     </div>
 
     <div class="game-over" id="gameOverModal">
@@ -253,6 +250,9 @@
                 }
             }, 1000);
             render();
+
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
         }
 
         function togglePause() {
@@ -262,26 +262,50 @@
         }
 
         function updateUI() {
-            document.title = `🍭 Candy Crush | 分数: ${score} 时间: ${timeLeft}s 剩余: ${movesLeft}`;
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('moves').textContent = movesLeft;
         }
 
         function endGame() {
             gameActive = false;
             clearInterval(timerInterval);
             alert(`游戏结束！得分：${score}`);
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverModal').style.display = 'flex';
+            submitScore();
         }
+
 
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let row = 0; row < GRID_SIZE; row++) {
                 for (let col = 0; col < GRID_SIZE; col++) {
-                    ctx.fillStyle = COLORS[grid[row][col]];
-                    ctx.beginPath();
-                    ctx.arc(col * CELL_SIZE + 30, row * CELL_SIZE + 30, 25, 0, Math.PI * 2);
-                    ctx.fill();
+                    const x = col * CELL_SIZE;
+                    const y = row * CELL_SIZE;
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+
+                    if (grid[row][col] !== null) {
+                        drawCandy(x + 5, y + 5, CELL_SIZE - 10, COLORS[grid[row][col]]);
+                    }
+
+                    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
+                        ctx.strokeStyle = '#FFD700';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+                    }
                 }
             }
         }
+
 
         document.getElementById('startBtn').addEventListener('click', initGame);
         document.getElementById('pauseBtn').addEventListener('click', togglePause);
@@ -308,40 +332,6 @@
                                 hasMatches = true;
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        function render() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw grid
-            for (let row = 0; row < GRID_SIZE; row++) {
-                for (let col = 0; col < GRID_SIZE; col++) {
-                    const x = col * CELL_SIZE;
-                    const y = row * CELL_SIZE;
-                    
-                    // Draw cell background
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                    ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
-                    
-                    // Draw cell border
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
-                    
-                    // Draw candy
-                    if (grid[row][col] !== null) {
-                        drawCandy(x + 5, y + 5, CELL_SIZE - 10, COLORS[grid[row][col]]);
-                    }
-                    
-                    // Highlight selected cell
-                    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
-                        ctx.strokeStyle = '#FFD700';
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
                     }
                 }
             }
@@ -636,25 +626,10 @@
             }, 1000);
         }
 
-        function updateUI() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('timer').textContent = timeLeft;
-            document.getElementById('moves').textContent = movesLeft;
-        }
-
         function checkGameEnd() {
             if (movesLeft <= 0 || timeLeft <= 0) {
                 endGame();
             }
-        }
-
-        function endGame() {
-            gameActive = false;
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('gameOverModal').style.display = 'flex';
-            
-            // Submit score
-            submitScore();
         }
 
         function submitScore() {
