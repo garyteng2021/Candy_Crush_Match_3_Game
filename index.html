@@ -146,10 +146,9 @@
     <div class="game-container">
         <div class="game-header">
             <h1 class="game-title">🍭 Candy Crush</h1>
+            <p class="stats">Token: <span id="token">?</span></p>
+            <p class="stats">积分: <span id="points">?</span></p>
         </div>
-        <div id="points">积分：--</div>
-        <div id="token">代币：--</div>
-        <div id="result">游戏结果将在此显示</div>
         <div class="game-stats">
             <div class="stat-item">
                 <span>Score: </span>
@@ -168,6 +167,14 @@
             <button id="controlButton" class="restart-btn">Start Game</button>
         </div>
         <canvas id="gameCanvas" width="480" height="480"></canvas>
+        <!-- 排行榜 -->
+        <div id="rankBlock" style="margin-top: 30px;">
+            <h5>🏆 总积分排行榜 (Top 10)</h5>
+            <table border="1" style="margin:auto; background:white; color:#333;">
+              <thead><tr><th>名次</th><th>用户名</th><th>积分</th></tr></thead>
+              <tbody id="rankBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <div class="game-over" id="gameOverModal">
@@ -180,6 +187,15 @@
     </div>
 
     <script>
+    window.Telegram.WebApp.ready();
+    const tgUser = Telegram.WebApp.initDataUnsafe.user;
+
+    let userId = null;
+    if (tgUser && tgUser.id) {
+      userId = tgUser.id;
+    } else {
+      alert("⚠️ 请从 Telegram 中打开游戏链接");
+    }
         // Game configuration
         const GRID_SIZE = 8;
         const CELL_SIZE = 60;
@@ -616,10 +632,26 @@
             submitScore();
         }
 
-        function refreshData(data) {
-            $('#points').text(`积分：${data.points}`);
-            $('#token').text(`代币：${data.token}`);
+        function refreshData(data){
+            $('#points').text(data.points);
+            $('#token').text(data.token);
             $('#result').html(`你得了 ${data.score} 分，结果：<strong>${data.result}</strong>`);
+        }
+
+        function maskName(username, phone) {
+            if (username) return username.slice(0, 4) + '***';
+            if (phone) return phone.slice(0, 4) + '***';
+            return '匿名';
+        } 
+
+        function loadRanking() {
+          $.getJSON('https://h5game-backend-production.up.railway.app/api/rank', function(data) {
+            let html = '';
+            data.forEach((row, i) => {
+              html += `<tr><td>${i + 1}</td><td>${maskName(row.username, row.phone)}</td><td>${row.points}</td></tr>`;
+            });
+            $('#rankBody').html(html);
+          });
         }
         
         function submitScore() {
@@ -647,7 +679,7 @@
 
         // Start the game
         initGame();
-
+        loadRanking();
         // ✅ 插在这后面
         document.getElementById('controlButton').addEventListener('click', () => {
             const btn = document.getElementById('controlButton');
