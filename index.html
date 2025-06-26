@@ -1,67 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candy Crush Test</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #6a11cb;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .panel {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            margin: 10px;
-            text-align: center;
-        }
-        .panel span {
-            display: block;
-            margin: 5px 0;
-            font-size: 1.2rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>H5测试游戏</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <style>
+    body { text-align: center; padding: 50px; font-family: sans-serif; background: #f2f2f2; }
+    h2 { margin-bottom: 20px; }
+    #playBtn { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #result { margin-top: 20px; font-size: 18px; color: #333; }
+    .stats { margin: 10px 0; font-size: 16px; }
+  </style>
 </head>
 <body>
-    <h1>🍭 Candy Crush 测试版</h1>
-    <div class="panel">
-        <span id="points">积分：--</span>
-        <span id="token">代币：--</span>
-        <span id="result">游戏结果将在此显示</span>
-        <button onclick="submitScore()">模拟提交分数</button>
-    </div>
+  <h2>🎮 积分小游戏测试</h2>
+  <p class="stats">Token: <span id="token">?</span></p>
+  <p class="stats">积分: <span id="points">?</span></p>
+  <button id="playBtn">开始游戏</button>
+  <div id="result"></div>
 
-    <script>
-        function refreshData(data) {
-            console.log('刷新数据：', data);
-            $('#points').text(`积分：${data.points}`);
-            $('#token').text(`代币：${data.token}`);
-            $('#result').html(`你得了 ${data.score} 分，结果：<strong>${data.result}</strong>`);
-        }
+  <script>
+    const userId = "6040142759"; // 请替换成您的用户ID
 
-        function submitScore() {
-            let userId = 'guest';
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-                userId = window.Telegram.WebApp.initDataUnsafe.user?.id || 'guest';
-            }
+    function refreshData(data){
+      $('#points').text(data.points);
+      $('#token').text(data.token);
+      $('#result').html(`你得了 ${data.score} 分，结果：<strong>${data.result}</strong>`);
+    }
 
-            $.post("https://h5game-backend-production.up.railway.app/play", {
-                user_id: userId
-            }, function(data) {
-                refreshData(data);
-            }).fail(function(err) {
-                alert("提交失败: " + (err.responseJSON?.error || "未知错误"));
-            });
-        }
-    </script>
+    $('#playBtn').on('click', function(){
+      $.post("https://h5game-backend-production.up.railway.app/play", { user_id: userId }, function(data) {
+        refreshData(data);
+      }).fail(res => {
+        alert(res.responseJSON?.error || '出错了');
+      });
+    });
+  </script>
 </body>
 </html>
