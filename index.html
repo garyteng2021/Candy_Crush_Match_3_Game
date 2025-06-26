@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candy Crush - Match 3 Game</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -146,7 +147,9 @@
         <div class="game-header">
             <h1 class="game-title">🍭 Candy Crush</h1>
         </div>
-        
+        <div id="points">积分：--</div>
+        <div id="token">代币：--</div>
+        <div id="result">游戏结果将在此显示</div>
         <div class="game-stats">
             <div class="stat-item">
                 <span>Score: </span>
@@ -604,35 +607,32 @@
             gameActive = false;
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverModal').style.display = 'flex';
-            
+            // 提交分数给后端
+            let userId = 'guest';
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+                userId = window.Telegram.WebApp.initDataUnsafe.user?.id || 'guest';
+            }
             // Submit score
             submitScore();
         }
 
+        function refreshData(data) {
+            $('#points').text(`积分：${data.points}`);
+            $('#token').text(`代币：${data.token}`);
+            $('#result').html(`你得了 ${data.score} 分，结果：<strong>${data.result}</strong>`);
+        }
+        
         function submitScore() {
-            // Get Telegram user ID
             let userId = 'guest';
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
                 userId = window.Telegram.WebApp.initDataUnsafe.user?.id || 'guest';
             }
 
-            // Submit score to server
-            fetch('/play', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    user_id: userId,
-                    score: score
-                })
-            }).then(response => response.json())
-              .then(data => {
-                  console.log('Score submitted successfully:', data);
-              })
-              .catch(error => {
-                  console.log('Score submission failed (expected in demo):', error);
-              });
+            $.post("https://h5game-backend-production.up.railway.app/play", { user_id: userId }, function(data) {
+                refreshData(data);
+            }).fail(function(err) {
+                alert("提交失败: " + (err.responseJSON?.error || "未知错误"));
+            });
         }
 
         function restartGame() {
