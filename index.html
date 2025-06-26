@@ -19,6 +19,21 @@
             align-items: center;
             min-height: 100vh;
             color: white;
+            flex-direction: column;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        .controls button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+            color: #333;
+            font-weight: bold;
         }
 
         .game-container {
@@ -142,10 +157,12 @@
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="game-header">
-            <h1 class="game-title">🍭 Candy Crush</h1>
-        </div>
+    <h1 style="margin-bottom: 20px;">🍭 Candy Crush</h1>
+    <canvas id="gameCanvas" width="480" height="480" style="border-radius: 15px;"></canvas>
+    <div class="controls">
+        <button id="startBtn">开始游戏</button>
+        <button id="pauseBtn">暂停</button>
+    </div>
         
         <div class="game-stats">
             <div class="stat-item">
@@ -194,7 +211,9 @@
         let score = 0;
         let timeLeft = GAME_TIME;
         let movesLeft = MAX_MOVES;
-        let gameActive = true;
+        let gameActive = false;
+        let paused = false;
+        let timerInterval = null;
         let selectedCell = null;
         let dragStart = null;
         let animating = false;
@@ -205,7 +224,6 @@
 
         // Initialize game
         function initGame() {
-            // Initialize grid with random colors
             grid = [];
             for (let row = 0; row < GRID_SIZE; row++) {
                 grid[row] = [];
@@ -213,23 +231,55 @@
                     grid[row][col] = Math.floor(Math.random() * COLORS.length);
                 }
             }
-
-            // Ensure no initial matches
-            removeInitialMatches();
-            
-            // Reset game state
             score = 0;
             timeLeft = GAME_TIME;
             movesLeft = MAX_MOVES;
             gameActive = true;
+            paused = false;
             updateUI();
-            
-            // Start timer
-            startTimer();
-            
-            // Initial render
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!paused && gameActive) {
+                    timeLeft--;
+                    updateUI();
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
             render();
         }
+
+        function togglePause() {
+            if (!gameActive) return;
+            paused = !paused;
+            document.getElementById('pauseBtn').innerText = paused ? '继续' : '暂停';
+        }
+
+        function updateUI() {
+            document.title = `🍭 Candy Crush | 分数: ${score} 时间: ${timeLeft}s 剩余: ${movesLeft}`;
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            alert(`游戏结束！得分：${score}`);
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    ctx.fillStyle = COLORS[grid[row][col]];
+                    ctx.beginPath();
+                    ctx.arc(col * CELL_SIZE + 30, row * CELL_SIZE + 30, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', initGame);
+        document.getElementById('pauseBtn').addEventListener('click', togglePause);
 
         function removeInitialMatches() {
             let hasMatches = true;
