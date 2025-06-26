@@ -157,13 +157,11 @@
     </style>
 </head>
 <body>
-    <h1 style="margin-bottom: 20px;">🍭 Candy Crush</h1>
-    <canvas id="gameCanvas" width="480" height="480" style="border-radius: 15px;"></canvas>
-    <div class="controls">
-        <button id="startBtn">开始游戏</button>
-        <button id="pauseBtn">暂停</button>
-    </div>
-        
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🍭 Candy Crush</h1>
+        </div>
+
         <div class="game-stats">
             <div class="stat-item">
                 <span>Score: </span>
@@ -178,8 +176,15 @@
                 <span id="moves">30</span>
             </div>
         </div>
-        
+        <div class="controls">
+            <button id="startBtn">开始游戏</button>
+            <button id="pauseBtn">暂停</button>
+        </div>
         <canvas id="gameCanvas" width="480" height="480"></canvas>
+        <div class="controls">
+            <button id="startBtn">开始游戏</button>
+            <button id="pauseBtn">暂停</button>
+        </div>
     </div>
 
     <div class="game-over" id="gameOverModal">
