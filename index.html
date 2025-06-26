@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -161,7 +161,9 @@
                 <span id="moves">30</span>
             </div>
         </div>
-        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button id="controlButton" class="restart-btn">Start Game</button>
+        </div>
         <canvas id="gameCanvas" width="480" height="480"></canvas>
     </div>
 
@@ -198,6 +200,8 @@
         let selectedCell = null;
         let dragStart = null;
         let animating = false;
+        let gamePaused = true;
+        let timerInterval = null;
 
         // Canvas setup
         const canvas = document.getElementById('gameCanvas');
@@ -205,7 +209,7 @@
 
         // Initialize game
         function initGame() {
-            // Initialize grid with random colors
+            // 初始化网格
             grid = [];
             for (let row = 0; row < GRID_SIZE; row++) {
                 grid[row] = [];
@@ -214,20 +218,24 @@
                 }
             }
 
-            // Ensure no initial matches
+            // 确保没有初始匹配
             removeInitialMatches();
-            
-            // Reset game state
+
+            // 初始化状态
             score = 0;
             timeLeft = GAME_TIME;
             movesLeft = MAX_MOVES;
             gameActive = true;
+            gamePaused = true;
+
+            // 停止旧的计时器（如果有）
+            clearInterval(timerInterval);
+
+            // 更新 UI 和按钮
             updateUI();
-            
-            // Start timer
-            startTimer();
-            
-            // Initial render
+            document.getElementById('controlButton').textContent = "Start Game";
+
+            // 首次渲染
             render();
         }
 
@@ -565,17 +573,13 @@
         }
 
         function startTimer() {
-            const timer = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(timer);
-                    return;
-                }
-                
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive || gamePaused) return;
                 timeLeft--;
                 updateUI();
-                
                 if (timeLeft <= 0) {
-                    clearInterval(timer);
+                    clearInterval(timerInterval);
                     endGame();
                 }
             }, 1000);
