@@ -19,22 +19,6 @@
             align-items: center;
             min-height: 100vh;
             color: white;
-            flex-direction: column;
-        }
-        .controls {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .controls button {
-            margin: 0 10px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1em;
-            cursor: pointer;
-            background: white;
-            color: #333;
-            font-weight: bold;
         }
 
         .game-container {
@@ -160,16 +144,24 @@
 <body>
     <div class="game-container">
         <div class="game-header">
-          <h1 class="game-title">🍭 Candy Crush</h1>
+            <h1 class="game-title">🍭 Candy Crush</h1>
         </div>
+        
         <div class="game-stats">
-          <div class="stat-item"><span>Score: </span><span id="score">0</span></div>
-          <div class="stat-item"><span>Time: </span><span id="timer">60</span>s</div>
-          <div class="stat-item"><span>Moves: </span><span id="moves">30</span></div>
+            <div class="stat-item">
+                <span>Score: </span>
+                <span id="score">0</span>
+            </div>
+            <div class="stat-item">
+                <span>Time: </span>
+                <span id="timer">60</span>s
+            </div>
+            <div class="stat-item">
+                <span>Moves: </span>
+                <span id="moves">30</span>
+            </div>
         </div>
-        <div class="controls">
-          <button id="startPauseBtn">开始游戏</button>
-        </div>
+        
         <canvas id="gameCanvas" width="480" height="480"></canvas>
     </div>
 
@@ -187,11 +179,11 @@
         const GRID_SIZE = 8;
         const CELL_SIZE = 60;
         const COLORS = [
-            '#e74c3c', // Red
-            '#f1c40f', // Yellow
-            '#3498db', // Blue
-            '#9b59b6', // Purple
-            '#2ecc71', // Green
+          '#e74c3c', // Red
+          '#f1c40f', // Yellow
+          '#3498db', // Blue
+          '#9b59b6', // Purple
+          '#2ecc71'  // Green
         ];
         const POINTS_PER_BLOCK = 10;
         const GAME_TIME = 60; // seconds
@@ -202,9 +194,7 @@
         let score = 0;
         let timeLeft = GAME_TIME;
         let movesLeft = MAX_MOVES;
-        let gameActive = false;
-        let paused = true;
-        let timerInterval = null;
+        let gameActive = true;
         let selectedCell = null;
         let dragStart = null;
         let animating = false;
@@ -215,65 +205,32 @@
 
         // Initialize game
         function initGame() {
-          grid = [];
-          for (let row = 0; row < GRID_SIZE; row++) {
-            grid[row] = [];
-            for (let col = 0; col < GRID_SIZE; col++) {
-              grid[row][col] = Math.floor(Math.random() * COLORS.length);
+            // Initialize grid with random colors
+            grid = [];
+            for (let row = 0; row < GRID_SIZE; row++) {
+                grid[row] = [];
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    grid[row][col] = Math.floor(Math.random() * COLORS.length);
+                }
             }
-          }
-          removeInitialMatches();
-          score = 0;
-          timeLeft = GAME_TIME;
-          movesLeft = MAX_MOVES;
-          gameActive = true;
-          paused = false;
-          updateUI();
-          render();
-          startTimer();
+
+            // Ensure no initial matches
+            removeInitialMatches();
+            
+            // Reset game state
+            score = 0;
+            timeLeft = GAME_TIME;
+            movesLeft = MAX_MOVES;
+            gameActive = true;
+            updateUI();
+            
+            // Start timer
+            startTimer();
+            
+            // Initial render
+            render();
         }
 
-        function toggleStartPause() {
-          if (!gameActive && paused) {
-            initGame();
-            document.getElementById('startPauseBtn').innerText = '暂停';
-          } else {
-            paused = !paused;
-            document.getElementById('startPauseBtn').innerText = paused ? '继续' : '暂停';
-          }
-        }
-
-        function updateUI() {
-          document.getElementById('score').textContent = score;
-          document.getElementById('timer').textContent = timeLeft;
-          document.getElementById('moves').textContent = movesLeft;
-        }
-
-        function endGame() {
-          gameActive = false;
-          clearInterval(timerInterval);
-          document.getElementById('startPauseBtn').innerText = '开始游戏';
-          alert('游戏结束，得分：' + score);
-        }
-
-        function render() {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          for (let row = 0; row < GRID_SIZE; row++) {
-            for (let col = 0; col < GRID_SIZE; col++) {
-              ctx.fillStyle = COLORS[grid[row][col]];
-              ctx.beginPath();
-              ctx.arc(col * CELL_SIZE + 30, row * CELL_SIZE + 30, 25, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-        }
-
-        function submitScore() {
-          console.log('Score submitted:', score);
-        }
-
-        document.getElementById('startPauseBtn').addEventListener('click', toggleStartPause);
-        
         function removeInitialMatches() {
             let hasMatches = true;
             while (hasMatches) {
@@ -296,6 +253,40 @@
                                 hasMatches = true;
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * CELL_SIZE;
+                    const y = row * CELL_SIZE;
+                    
+                    // Draw cell background
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    
+                    // Draw cell border
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+                    
+                    // Draw candy
+                    if (grid[row][col] !== null) {
+                        drawCandy(x + 5, y + 5, CELL_SIZE - 10, COLORS[grid[row][col]]);
+                    }
+                    
+                    // Highlight selected cell
+                    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
+                        ctx.strokeStyle = '#FFD700';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
                     }
                 }
             }
@@ -574,22 +565,41 @@
         }
 
         function startTimer() {
-          clearInterval(timerInterval);
-          timerInterval = setInterval(() => {
-            if (!gameActive || paused) return;
-            timeLeft--;
-            updateUI();
-            if (timeLeft <= 0) {
-              clearInterval(timerInterval);
-              endGame();
-            }
-          }, 1000);
+            const timer = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(timer);
+                    return;
+                }
+                
+                timeLeft--;
+                updateUI();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('moves').textContent = movesLeft;
         }
 
         function checkGameEnd() {
             if (movesLeft <= 0 || timeLeft <= 0) {
                 endGame();
             }
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverModal').style.display = 'flex';
+            
+            // Submit score
+            submitScore();
         }
 
         function submitScore() {
