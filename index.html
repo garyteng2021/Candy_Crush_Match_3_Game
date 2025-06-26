@@ -666,7 +666,10 @@
                 userId = window.Telegram.WebApp.initDataUnsafe.user?.id || 'guest';
             }
 
-            $.post("https://h5game-backend-production.up.railway.app/play", { user_id: userId }, function(data) {
+            $.post("https://h5game-backend-production.up.railway.app/play", {
+                user_id: userId,
+                score: score  // ✅ 确保发送 score
+            }, function(data) {
                 refreshData(data);
             }).fail(function(err) {
                 alert("提交失败: " + (err.responseJSON?.error || "未知错误"));
