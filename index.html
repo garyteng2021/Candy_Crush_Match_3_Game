@@ -160,26 +160,15 @@
 <body>
     <div class="game-container">
         <div class="game-header">
-            <h1 class="game-title">🍭 Candy Crush</h1>
+          <h1 class="game-title">🍭 Candy Crush</h1>
         </div>
-
         <div class="game-stats">
-            <div class="stat-item">
-                <span>Score: </span>
-                <span id="score">0</span>
-            </div>
-            <div class="stat-item">
-                <span>Time: </span>
-                <span id="timer">60</span>s
-            </div>
-            <div class="stat-item">
-                <span>Moves: </span>
-                <span id="moves">30</span>
-            </div>
+          <div class="stat-item"><span>Score: </span><span id="score">0</span></div>
+          <div class="stat-item"><span>Time: </span><span id="timer">60</span>s</div>
+          <div class="stat-item"><span>Moves: </span><span id="moves">30</span></div>
         </div>
         <div class="controls">
-            <button id="startBtn">开始游戏</button>
-            <button id="pauseBtn">暂停</button>
+          <button id="startPauseBtn">开始游戏</button>
         </div>
         <canvas id="gameCanvas" width="480" height="480"></canvas>
     </div>
@@ -214,7 +203,7 @@
         let timeLeft = GAME_TIME;
         let movesLeft = MAX_MOVES;
         let gameActive = false;
-        let paused = false;
+        let paused = true;
         let timerInterval = null;
         let selectedCell = null;
         let dragStart = null;
@@ -226,90 +215,65 @@
 
         // Initialize game
         function initGame() {
-            grid = [];
-            for (let row = 0; row < GRID_SIZE; row++) {
-                grid[row] = [];
-                for (let col = 0; col < GRID_SIZE; col++) {
-                    grid[row][col] = Math.floor(Math.random() * COLORS.length);
-                }
+          grid = [];
+          for (let row = 0; row < GRID_SIZE; row++) {
+            grid[row] = [];
+            for (let col = 0; col < GRID_SIZE; col++) {
+              grid[row][col] = Math.floor(Math.random() * COLORS.length);
             }
-            score = 0;
-            timeLeft = GAME_TIME;
-            movesLeft = MAX_MOVES;
-            gameActive = true;
-            paused = false;
-            updateUI();
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if (!paused && gameActive) {
-                    timeLeft--;
-                    updateUI();
-                    if (timeLeft <= 0) {
-                        endGame();
-                    }
-                }
-            }, 1000);
-            render();
-
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('pauseBtn').style.display = 'inline-block';
+          }
+          removeInitialMatches();
+          score = 0;
+          timeLeft = GAME_TIME;
+          movesLeft = MAX_MOVES;
+          gameActive = true;
+          paused = false;
+          updateUI();
+          render();
+          startTimer();
         }
 
-        function togglePause() {
-            if (!gameActive) return;
+        function toggleStartPause() {
+          if (!gameActive && paused) {
+            initGame();
+            document.getElementById('startPauseBtn').innerText = '暂停';
+          } else {
             paused = !paused;
-            document.getElementById('pauseBtn').innerText = paused ? '继续' : '暂停';
+            document.getElementById('startPauseBtn').innerText = paused ? '继续' : '暂停';
+          }
         }
 
         function updateUI() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('timer').textContent = timeLeft;
-            document.getElementById('moves').textContent = movesLeft;
+          document.getElementById('score').textContent = score;
+          document.getElementById('timer').textContent = timeLeft;
+          document.getElementById('moves').textContent = movesLeft;
         }
 
         function endGame() {
-            gameActive = false;
-            clearInterval(timerInterval);
-            alert(`游戏结束！得分：${score}`);
-            document.getElementById('startBtn').style.display = 'inline-block';
-            document.getElementById('pauseBtn').style.display = 'none';
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('gameOverModal').style.display = 'flex';
-            submitScore();
+          gameActive = false;
+          clearInterval(timerInterval);
+          document.getElementById('startPauseBtn').innerText = '开始游戏';
+          alert('游戏结束，得分：' + score);
         }
-
 
         function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let row = 0; row < GRID_SIZE; row++) {
-                for (let col = 0; col < GRID_SIZE; col++) {
-                    const x = col * CELL_SIZE;
-                    const y = row * CELL_SIZE;
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                    ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
-
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
-
-                    if (grid[row][col] !== null) {
-                        drawCandy(x + 5, y + 5, CELL_SIZE - 10, COLORS[grid[row][col]]);
-                    }
-
-                    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
-                        ctx.strokeStyle = '#FFD700';
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
-                    }
-                }
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let row = 0; row < GRID_SIZE; row++) {
+            for (let col = 0; col < GRID_SIZE; col++) {
+              ctx.fillStyle = COLORS[grid[row][col]];
+              ctx.beginPath();
+              ctx.arc(col * CELL_SIZE + 30, row * CELL_SIZE + 30, 25, 0, Math.PI * 2);
+              ctx.fill();
             }
+          }
         }
 
+        function submitScore() {
+          console.log('Score submitted:', score);
+        }
 
-        document.getElementById('startBtn').addEventListener('click', initGame);
-        document.getElementById('pauseBtn').addEventListener('click', togglePause);
-
+        document.getElementById('startPauseBtn').addEventListener('click', toggleStartPause);
+        
         function removeInitialMatches() {
             let hasMatches = true;
             while (hasMatches) {
@@ -610,20 +574,16 @@
         }
 
         function startTimer() {
-            const timer = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(timer);
-                    return;
-                }
-                
-                timeLeft--;
-                updateUI();
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    endGame();
-                }
-            }, 1000);
+          clearInterval(timerInterval);
+          timerInterval = setInterval(() => {
+            if (!gameActive || paused) return;
+            timeLeft--;
+            updateUI();
+            if (timeLeft <= 0) {
+              clearInterval(timerInterval);
+              endGame();
+            }
+          }, 1000);
         }
 
         function checkGameEnd() {
