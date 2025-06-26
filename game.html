@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>H5测试游戏</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <style>
+    body { text-align: center; padding: 50px; font-family: sans-serif; background: #f2f2f2; }
+    h2 { margin-bottom: 20px; }
+    #playBtn { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #result { margin-top: 20px; font-size: 18px; color: #333; }
+    .stats { margin: 10px 0; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>🎮 积分小游戏测试</h2>
+  <p class="stats">Token: <span id="token">?</span></p>
+  <p class="stats">积分: <span id="points">?</span></p>
+  <button id="playBtn">开始游戏</button>
+  <div id="result"></div>
+
+  <!-- 总积分排行榜 -->
+  <h5 class="section-title">🏆 总积分排行榜 (Top 10)</h5>
+  <div class="table-responsive d-flex justify-content-center">
+    <table class="table table-bordered w-auto">
+      <thead class="table-light">
+        <tr><th>名次</th><th>用户名</th><th>积分</th></tr>
+      </thead>
+      <tbody>
+        {% for row in total_rank %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ (row[0][:4] + '***') if row[0] else ((row[1][:4] + '***') if row[1] else '匿名') }}</td>
+          <td>{{ row[2] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    window.Telegram.WebApp.ready();
+    const tgUser = Telegram.WebApp.initDataUnsafe.user;
+
+    let userId = null;
+    if (tgUser && tgUser.id) {
+      userId = tgUser.id;
+    } else {
+      alert("⚠️ 请从 Telegram 中打开游戏链接");
+    }
+
+    function refreshData(data){
+      $('#points').text(data.points);
+      $('#token').text(data.token);
+      $('#result').html(`你得了 ${data.score} 分，结果：<strong>${data.result}</strong>`);
+    }
+
+    $('#playBtn').on('click', function(){
+      if (!userId) {
+        alert("用户信息获取失败！");
+        return;
+      }
+      $.post('/play', { user_id: userId }, function(data){
+        refreshData(data);
+      }).fail(res => {
+        alert(res.responseJSON?.error || '出错了');
+      });
+    });
+  </script>
+</body>
+</html>
