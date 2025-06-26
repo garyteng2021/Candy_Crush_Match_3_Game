@@ -21,21 +21,11 @@
   <div id="result"></div>
 
   <!-- 总积分排行榜 -->
-  <h5 class="section-title">🏆 总积分排行榜 (Top 10)</h5>
-  <div class="table-responsive d-flex justify-content-center">
-    <table class="table table-bordered w-auto">
-      <thead class="table-light">
-        <tr><th>名次</th><th>用户名</th><th>积分</th></tr>
-      </thead>
-      <tbody>
-        {% for row in total_rank %}
-        <tr>
-          <td>{{ loop.index }}</td>
-          <td>{{ (row[0][:4] + '***') if row[0] else ((row[1][:4] + '***') if row[1] else '匿名') }}</td>
-          <td>{{ row[2] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+  <div id="rankBlock">
+    <h5>🏆 总积分排行榜 (Top 10)</h5>
+    <table border="1" style="margin:auto;">
+      <thead><tr><th>名次</th><th>用户名</th><th>积分</th></tr></thead>
+      <tbody id="rankBody"></tbody>
     </table>
   </div>
 
@@ -61,14 +51,32 @@
         alert("用户信息获取失败！");
         return;
       }
-      $.post("https://h5game-backend-production.up.railway.app/play", {
+      $.post('https://h5game-backend-production.up.railway.app/play', {
         user_id: userId
-      }, function(data) {
+      }, function (data) {
         refreshData(data);
       }).fail(res => {
         alert(res.responseJSON?.error || '出错了');
       });
     });
+
+    function maskName(username, phone) {
+      if (username) return username.slice(0, 4) + '***';
+      if (phone) return phone.slice(0, 4) + '***';
+      return '匿名';
+    } 
+
+    function loadRanking() {
+      $.getJSON('https://h5game-backend-production.up.railway.app/api/rank', function(data) {
+        let html = '';
+        data.forEach((row, i) => {
+          html += `<tr><td>${i + 1}</td><td>${maskName(row.username, row.phone)}</td><td>${row.points}</td></tr>`;
+        });
+        $('#rankBody').html(html);
+      });
+    }
+
+  loadRanking();
   </script>
 </body>
 </html>
