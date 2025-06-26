@@ -225,7 +225,7 @@
             score = 0;
             timeLeft = GAME_TIME;
             movesLeft = MAX_MOVES;
-            gameActive = true;
+            gameActive = false;   // 初始未激活
             gamePaused = true;
 
             // 停止旧的计时器（如果有）
@@ -378,7 +378,7 @@
         }
 
         function handleMouseDown(e) {
-            if (!gameActive || animating) return;
+            if (!gameActive || gamePaused || animating) return;
             
             const pos = getCanvasPosition(e);
             const cell = getCellFromPosition(pos.x, pos.y);
@@ -391,7 +391,7 @@
         }
 
         function handleMouseMove(e) {
-            if (!gameActive || animating || !dragStart) return;
+            if (!gameActive || gamePaused || animating || !dragStart) return;
             
             const pos = getCanvasPosition(e);
             const cell = getCellFromPosition(pos.x, pos.y);
@@ -403,7 +403,7 @@
         }
 
         function handleMouseUp(e) {
-            if (!gameActive || animating || !dragStart || !selectedCell) return;
+            if (!gameActive || gamePaused || animating || !dragStart || !selectedCell) return;
             
             if (!cellsEqual(dragStart, selectedCell)) {
                 attemptSwap(dragStart, selectedCell);
@@ -415,16 +415,19 @@
         }
 
         function handleTouchStart(e) {
+            if (!gameActive || gamePaused || animating) return;
             e.preventDefault();
             handleMouseDown(e);
         }
 
         function handleTouchMove(e) {
+            if (!gameActive || gamePaused || animating || !dragStart) return;
             e.preventDefault();
             handleMouseMove(e);
         }
 
         function handleTouchEnd(e) {
+            if (!gameActive || gamePaused || animating || !dragStart || !selectedCell) return;
             e.preventDefault();
             handleMouseUp(e);
         }
@@ -650,7 +653,7 @@
             const btn = document.getElementById('controlButton');
 
             if (!gameActive) {
-                initGame();
+                gameActive = true;
                 gamePaused = false;
                 btn.textContent = "Pause";
                 startTimer();
